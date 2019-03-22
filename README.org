@@ -84,3 +84,231 @@ Run a Jupyter notebook and open displayed URL in browser
 
 As long as shell is controlled by Emacs you may open 
 the displayed URL by mark the URL and type M+x '[[help:browse-url][browse-url]]'.
+
+** Learning GIT by doing "[[https://alexwlchan.net/a-plumbers-guide-to-git/][A Plumber’s Guide to Git]]" and "man git-push"
+
+I initialized the local git repository and did 2 commits
+and created a repository on Adtran's github and did 1 commit.
+After I tried to synchronize my local with remote repository 
+I ended up in an fatal error:
+
+#+BEGIN_EXAMPLE
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git pull adtran 
+  warning: keine gemeinsamen Commits
+  remote: Enumerating objects: 3, done.        
+  remote: Counting objects: 100% (3/3), done.        
+  remote: Compressing objects: 100% (2/2), done.        
+  remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0        
+  Entpacke Objekte: 100% (3/3), Fertig.
+  Von github.adtran.com:twirkner/play-jupyter
+   ,* [neuer Branch]    master     -> adtran/master
+  Sie führten "pull" von Remote-Repository 'adtran' aus, ohne einen
+  Branch anzugeben. Da das nicht das konfigurierte Standard-Remote-
+  Repository für den aktuellen Branch ist, müssen Sie einen Branch auf
+  der Befehlszeile angeben.
+  56S8TZ1[play-jupyter]$ git pull adtran master
+  Von github.adtran.com:twirkner/play-jupyter
+   ,* branch            master     -> FETCH_HEAD
+  fatal: Verweigere den Merge von nicht zusammenhängenden Historien.
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git push adtran master
+  To github.adtran.com:twirkner/play-jupyter.git
+   ! [rejected]        master -> master (non-fast-forward)
+  error: Fehler beim Versenden einiger Referenzen nach 'git@github.adtran.com:twirkner/play-jupyter.git'
+  Hinweis: Aktualisierungen wurden zurückgewiesen, weil die Spitze Ihres aktuellen
+  Hinweis: Branches hinter seinem externen Gegenstück zurückgefallen ist. Führen Sie
+  Hinweis: die externen Änderungen zusammen (z. B. 'git pull ...') bevor Sie "push"
+  Hinweis: erneut ausführen.
+  Hinweis: Siehe auch die Sektion 'Note about fast-forwards' in 'git push --help'
+  Hinweis: für weitere Details.
+  56S8TZ1[play-jupyter]$ 
+#+END_EXAMPLE
+
+My two ~git init~ calls - one on github - lead to two root commits
+being ~c7bfd0f~ as well as ~ec32c54~:
+- refs
+  - =$ cat .git/refs/heads/master= 
+    c49dbd12c30126fd711390f1b8dd8ee712a78b34
+  - =$ cat .git/refs/remotes/adtran/master=
+    ec32c5429d67e71de38cebcd720f23e6aae199e8
+- commit objects
+  - =$ git cat-file -p 6a0fc90cf9c5152cfb452a42f9bb3efc9dae9176=
+    - tree c7bfd0fc492f13509954a5018e701ccf4783e90e
+      - =$ git cat-file -p c7bfd0fc492f13509954a5018e701ccf4783e90e=
+        - tree objects
+          #+BEGIN_EXAMPLE
+            100644 blob 561b881505065ada9f3124bb4268232bcf336c19	python3_notes.ipynb
+          #+END_EXAMPLE
+    - author Tilo Wirkner <tilo.wirkner@adtran.com> 1553258993 +0100
+    - committer Tilo Wirkner <tilo.wirkner@adtran.com> 1553258993 +0100
+    - log message 
+      #+BEGIN_EXAMPLE
+        Initial commit of new project
+        
+        Playground to learn and understand Jupyter Notebooks
+      #+END_EXAMPLE
+  - =$ git cat-file -p c49dbd12c30126fd711390f1b8dd8ee712a78b34=
+    - tree d449f244dae6c29f26704dfb6098e3d4ea6e3112
+      - =$ git cat-file -p d449f244dae6c29f26704dfb6098e3d4ea6e3112=
+        - tree objects
+          #+BEGIN_EXAMPLE
+            100644 blob 894a44cc066a027465cd26d634948d56d13af9af	.gitignore
+            100644 blob 2530266a36a8b2e18003b65797cee0f9c4bd60bb	Pipfile
+            100644 blob 55eb3e5fdeeb609a0848da7975b26ac1a86a6bd7	Pipfile.lock
+            100644 blob ac93b4b55546e714ab1feb414e4e14d5bb2e488a	README.org
+            100644 blob 561b881505065ada9f3124bb4268232bcf336c19	python3_notes.ipynb
+            100644 blob cee5e58443d3bd60769a48d731921ed50adb581c	python_tricks.ipynb
+            100644 blob 3224ceb843bc7c13269b27d228cfb94aa978a70c	requirements.txt
+            100644 blob 7ecbe2956dc100d3b29bcabe84f6702ae55fcd72	textfile.txt
+          #+END_EXAMPLE
+    - parent 6a0fc90cf9c5152cfb452a42f9bb3efc9dae9176
+    - author Tilo Wirkner <tilo.wirkner@adtran.com> 1553259039 +0100
+    - committer Tilo Wirkner <tilo.wirkner@adtran.com> 1553259039 +0100
+    - log message 
+      #+BEGIN_EXAMPLE
+        Supplement to the initial commit - missed to mark all files :-O
+      #+END_EXAMPLE
+  - =$ git cat-file -p ec32c5429d67e71de38cebcd720f23e6aae199e8=
+    - tree 90a01769a94b92239d70f8d1fe46eea48d3aa446
+      - =$ git cat-file -p 90a01769a94b92239d70f8d1fe46eea48d3aa446=
+        - tree objects
+          #+BEGIN_EXAMPLE
+            100644 blob 894a44cc066a027465cd26d634948d56d13af9af	.gitignore
+          #+END_EXAMPLE
+    - author TILO WIRKNER <TILO.WIRKNER@adtran.com> 1553257717 +0100
+    - committer GitHub Enterprise <github-noreply@adtran.com> 1553257717 +0100
+    - log message 
+      #+BEGIN_EXAMPLE
+        Initial commit
+      #+END_EXAMPLE
+
+The issue is explained in "NOTE ABOUT FAST-FORWARDS" 
+in manual page of [[man:git-push][git-push]].
+
+#+BEGIN_EXAMPLE
+  In contrast, a non-fast-forward update will lose history. For example, suppose you and somebody else
+  started at the same commit X, and you built a history leading to commit B while the other person built a
+  history leading to commit A. The history looks like this:
+
+            B
+           /
+       ---X---A
+
+  Further suppose that the other person already pushed changes leading to A back to the original repository
+  from which you two obtained the original commit X.
+
+  The push done by the other person updated the branch that used to point at commit X to point at commit A.
+  It is a fast-forward.
+
+  But if you try to push, you will attempt to update the branch (that now points at A) with commit B. This
+  does not fast-forward. If you did so, the changes introduced by commit A will be lost, because everybody
+  will now start building on top of B.
+
+  The command by default does not allow an update that is not a fast-forward to prevent such loss of
+  history.
+
+  If you do not want to lose your work (history from X to B) or the work by the other person (history from
+  X to A), you would need to first fetch the history from the repository, create a history that contains
+  changes done by both parties, and push the result back.
+
+  You can perform "git pull", resolve potential conflicts, and "git push" the result. A "git pull" will
+  create a merge commit C between commits A and B.
+
+            B---C
+           /   /
+       ---X---A
+
+  Updating A with the resulting merge commit will fast-forward and your push will be accepted.
+
+  Alternatively, you can rebase your change between X and B on top of A, with "git pull --rebase", and push
+  the result back. The rebase will create a new commit D that builds the change between X and B on top of
+  A.
+
+            B   D
+           /   /
+       ---X---A
+
+  Again, updating A with this commit will fast-forward and your push will be accepted.
+#+END_EXAMPLE
+
+Ok, let's go ... Upps
+
+#+BEGIN_EXAMPLE
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git pull --rebase adtran master
+  error: Pull mit Rebase nicht möglich: Sie haben Änderungen, die nicht zum Commit vorgemerkt sind.
+  error: Bitte committen Sie die Änderungen oder benutzen Sie "stash".
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git status
+  Auf Branch master
+  Änderungen, die nicht zum Commit vorgemerkt sind:
+    (benutzen Sie "git add <Datei>...", um die Änderungen zum Commit vorzumerken)
+    (benutzen Sie "git checkout -- <Datei>...", um die Änderungen im Arbeitsverzeichnis zu verwerfen)
+
+          geändert:       README.org
+
+  keine Änderungen zum Commit vorgemerkt (benutzen Sie "git add" und/oder "git commit -a")
+  56S8TZ1[play-jupyter]$ 
+#+END_EXAMPLE
+
+I changed the file I writing in ... let's stash it away and do the rebase. 
+
+#+BEGIN_EXAMPLE
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git stash push
+  Saved working directory and index state WIP on master: c49dbd1 Supplement to the initial commit - missed to mark all files :-O
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$git pull --rebase adtran master
+  Von github.adtran.com:twirkner/play-jupyter
+   ,* branch            master     -> FETCH_HEAD
+  First, rewinding head to replay your work on top of it...
+  Wende an: Initial commit of new project
+  Wende an: Supplement to the initial commit - missed to mark all files :-O
+  Verwende Informationen aus der Staging-Area, um ein Basisverzeichnis nachzustellen ...
+  .git/rebase-apply/patch:537: trailing whitespace.
+  and remembered IPython and its Notebook facility 
+  .git/rebase-apply/patch:540: trailing whitespace.
+  In meantime all python language-agnostic components 
+  .git/rebase-apply/patch:543: trailing whitespace.
+  "IPython 3.x was the last monolithic release of IPython, 
+  .git/rebase-apply/patch:544: trailing whitespace.
+  containing the notebook server, qtconsole, etc. 
+  .git/rebase-apply/patch:545: trailing whitespace.
+  As of IPython 4.0, the language-agnostic parts of the project: 
+  warning: unterdrückte 18 Whitespace-Fehler
+  warning: 23 Zeilen fügen Whitespace-Fehler hinzu.
+  Falle zurück zum Patchen der Basis und zum 3-Wege-Merge ...
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git status
+  Auf Branch master
+  nichts zu committen, Arbeitsverzeichnis unverändert
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git push adtran master
+  Zähle Objekte: 11, Fertig.
+  Delta compression using up to 4 threads.
+  Komprimiere Objekte: 100% (10/10), Fertig.
+  Schreibe Objekte: 100% (11/11), 10.99 KiB | 2.75 MiB/s, Fertig.
+  Total 11 (delta 0), reused 0 (delta 0)
+  To github.adtran.com:twirkner/play-jupyter.git
+     ec32c54..c88be29  master -> master
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git stash pop
+  Auf Branch master
+  Änderungen, die nicht zum Commit vorgemerkt sind:
+    (benutzen Sie "git add <Datei>...", um die Änderungen zum Commit vorzumerken)
+    (benutzen Sie "git checkout -- <Datei>...", um die Änderungen im Arbeitsverzeichnis zu verwerfen)
+
+          geändert:       README.org
+
+  keine Änderungen zum Commit vorgemerkt (benutzen Sie "git add" und/oder "git commit -a")
+  Dropped refs/stash@{0} (8f8e986c4285eb21374246e4327c2a5ccbef91fc)
+  56S8TZ1[play-jupyter]$ 
+#+END_EXAMPLE
+
+OK, we are back on track :-).
