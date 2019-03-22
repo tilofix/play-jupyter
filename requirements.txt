@@ -1,0 +1,9 @@
+# For package python3-ipython
+# ipykernel
+# Upps, this (re)installs a lot, inbetween ipython>=5.0.0!? : ipykernel-5.1.0 jupyter-client-5.2.4 python-dateutil-2.8.0 pyzmq-18.0.1
+# Uninstall ipykernel: "jsonschema 3.0.1 has requirement six>=1.11.0, but you'll have six 1.10.0 which is incompatible."
+# Did not help: pip3 freeze | xargs pip3 uninstall -y
+# Install the Jupyter system, including the notebook, qtconsole, and the IPython kernel.
+jupyter
+# Dependency not defined by jupyter
+idna

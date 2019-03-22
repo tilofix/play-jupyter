@@ -1,0 +1,86 @@
+# -*- coding: utf-8-unix -*-
+#+TITLE: Playground to learn and understand Jupyter Notebooks
+
+* Playground to learn and understand Jupyter Notebooks
+
+** IP[y]: IPython Interactive Computing
+
+Recently I started to learn Python-Tricks (in German)
+and remembered IPython and its Notebook facility 
+and check if I can use it to make notes on Python-Tricks.
+
+In meantime all python language-agnostic components 
+are moved from IPython to Jupyter.
+
+"IPython 3.x was the last monolithic release of IPython, 
+containing the notebook server, qtconsole, etc. 
+As of IPython 4.0, the language-agnostic parts of the project: 
+the notebook format, message protocol, qtconsole, notebook web application, etc. 
+have moved to new projects under the name [[https://jupyter.org/][Jupyter]]. 
+IPython itself is focused on interactive Python, 
+part of which is providing a Python kernel for Jupyter."
+
+** Learning about Jupyter Notebook
+- This blog entry refers to a text book:
+  https://blog.jupyter.org/teaching-and-learning-with-jupyter-c1d965f7b93a
+- A text book: 
+  https://www.packtpub.com/big-data-and-business-intelligence/learning-jupyter
+- And the [[https://github.com/jupyter/jupyter/wiki/A-gallery-of-interesting-Jupyter-Notebooks][A gallery of interesting Jupyter Notebooks]] 
+  which are to be displayed by [[https://nbviewer.jupyter.org/][NBViewer]].
+- The Notebook Help displayed by nbviewer:
+  https://nbviewer.jupyter.org/github/ipython/ipython/blob/3.x/examples/Notebook/Index.ipynb
+
+** [[https://pipenv.readthedocs.io/en/latest/][Pipenv]]: Python Dev Workflow for Humans
+
+Pipenv is a tool that aims to bring the best of all packaging worlds 
+(bundler, composer, npm, cargo, yarn, etc.) to the Python world. 
+Windows is a first-class citizen, in our world.
+
+It automatically creates and manages a virtualenv for your projects, 
+as well as adds/removes packages from your Pipfile as you install/uninstall packages. 
+It also generates the ever-important Pipfile.lock, 
+which is used to produce deterministic builds.
+
+Importing from requirements.txt
+
+If you only have a requirements.txt file available when running pipenv install, 
+pipenv will automatically import the contents of this file and create a Pipfile for you.
+
+You can also specify =$ pipenv install -r path/to/requirements.txt= to import a requirements file.
+
+Pipenv Workflow
+- Clone / create project repository:
+  =$ cd play-jupyter=
+- Install from Pipfile, if there is one 
+  or will create a Pipfile if one doesn’t exist 
+  (or pipenv will automatically import the contents of requirements.txt):
+  =pipenv install --three=
+- Or, add a package to your new project:
+  =$ pipenv install <package>=
+- Next, activate the Pipenv shell:
+  =$ pipenv shell=
+
+#+BEGIN_EXAMPLE
+  pipenv install --three
+  pipenv run pip list
+#+END_EXAMPLE
+
+Let's see how PIP 
+
+#+BEGIN_SRC shell :tangle no
+  pipenv --where
+  pipenv --venv
+  pipenv --py
+#+END_SRC 
+
+** Run a Jupyter Notebook with Pipenv
+
+Run a Jupyter notebook and open displayed URL in browser 
+(does not open automatically as we are running cygwin). 
+
+#+BEGIN_EXAMPLE
+  pipenv run jupyter-notebook
+#+END_EXAMPLE
+
+As long as shell is controlled by Emacs you may open 
+the displayed URL by mark the URL and type M+x '[[help:browse-url][browse-url]]'.
