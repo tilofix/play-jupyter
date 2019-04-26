@@ -125,14 +125,14 @@ I ended up in an fatal error:
 #+END_EXAMPLE
 
 My two ~git init~ calls - one on github - lead to two root commits
-being ~c7bfd0f~ as well as ~ec32c54~:
+being ~6a0fc90~ as well as ~ec32c54~:
 - refs
   - =$ cat .git/refs/heads/master= 
     c49dbd12c30126fd711390f1b8dd8ee712a78b34
   - =$ cat .git/refs/remotes/adtran/master=
     ec32c5429d67e71de38cebcd720f23e6aae199e8
 - commit objects
-  - =$ git cat-file -p 6a0fc90cf9c5152cfb452a42f9bb3efc9dae9176=
+  - (is a root commit, has not parent) =$ git cat-file -p 6a0fc90cf9c5152cfb452a42f9bb3efc9dae9176=
     - tree c7bfd0fc492f13509954a5018e701ccf4783e90e
       - =$ git cat-file -p c7bfd0fc492f13509954a5018e701ccf4783e90e=
         - tree objects
@@ -168,7 +168,7 @@ being ~c7bfd0f~ as well as ~ec32c54~:
       #+BEGIN_EXAMPLE
         Supplement to the initial commit - missed to mark all files :-O
       #+END_EXAMPLE
-  - =$ git cat-file -p ec32c5429d67e71de38cebcd720f23e6aae199e8=
+  - (is a root commit, has not parent) =$ git cat-file -p ec32c5429d67e71de38cebcd720f23e6aae199e8=
     - tree 90a01769a94b92239d70f8d1fe46eea48d3aa446
       - =$ git cat-file -p 90a01769a94b92239d70f8d1fe46eea48d3aa446=
         - tree objects
