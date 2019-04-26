@@ -1,8 +1,6 @@
 # -*- coding: utf-8-unix -*-
 #+TITLE: Playground to learn and understand Jupyter Notebooks
 
-* Playground to learn and understand Jupyter Notebooks
-
 ** IP[y]: IPython Interactive Computing
 
 Recently I started to learn Python-Tricks (in German)
