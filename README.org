@@ -27,6 +27,10 @@ part of which is providing a Python kernel for Jupyter."
   which are to be displayed by [[https://nbviewer.jupyter.org/][NBViewer]].
 - The Notebook Help displayed by nbviewer:
   https://nbviewer.jupyter.org/github/ipython/ipython/blob/3.x/examples/Notebook/Index.ipynb
+- [[http://jupyterlab.readthedocs.io/en/stable/][JupyterLab]] is the next-generation user interface 
+  for [[https://jupyter.org/][Project Jupyter]] offering all the familiar building blocks 
+  of the classic Jupyter Notebook in a flexible and powerful user interface. 
+  JupyterLab will eventually replace the classic Jupyter Notebook.
 
 ** [[https://pipenv.readthedocs.io/en/latest/][Pipenv]]: Python Dev Workflow for Humans
 
