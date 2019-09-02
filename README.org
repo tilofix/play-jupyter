@@ -312,3 +312,49 @@ I changed the file I writing in ... let's stash it away and do the rebase.
 #+END_EXAMPLE
 
 OK, we are back on track :-).
+
+** Post Scriptum for Learning GIT by doing "[[https://alexwlchan.net/a-plumbers-guide-to-git/][A Plumber’s Guide to Git]]" 
+
+The plumber's guide did not explain why I get different hash values 
+when ~git~ creates SHA1 value and when ~sha1sum~ creates SHA1.
+
+#+BEGIN_EXAMPLE
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ git hash-object python3_notes.ipynb 
+  561b881505065ada9f3124bb4268232bcf336c19
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ sha1sum.exe python3_notes.ipynb 
+  edcbcd188a8e3bd1e18e125d79670fbbcf02e1bf *python3_notes.ipynb
+  56S8TZ1[play-jupyter]$ 
+#+END_EXAMPLE
+
+I found answer in this stackoverflow thread:
+[[https://stackoverflow.com/questions/5290444/why-does-git-hash-object-return-a-different-hash-than-openssl-sha1#5290484][Why does git hash-object return a different hash than openssl sha1?]]
+
+You see a difference because git hash-object doesn't just take a hash of the bytes in the file - 
+it prepends the string "blob " followed by the file size and a NUL to the file's contents before hashing. 
+There are more details in this other answer on Stack Overflow:
+[[https://stackoverflow.com/questions/552659/how-to-assign-a-git-sha1s-to-a-file-without-git/552725#552725][How to assign a Git SHA1's to a file without Git?]]
+
+Let's verify with help of ~stat~ to get size of the file in question.
+
+#+BEGIN_EXAMPLE
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ stat --format %s python3_notes.ipynb 
+  4634
+  56S8TZ1[play-jupyter]$ 
+  56S8TZ1[play-jupyter]$ printf 'blob 4634\0' | cat - python3_notes.ipynb | sha1sum.exe -
+  561b881505065ada9f3124bb4268232bcf336c19 *-
+  56S8TZ1[play-jupyter]$ 
+#+END_EXAMPLE
+
+So ~git~ prepends a type/length field to the data it has to hash.
+
+Finally, let's check where this plumbing technique is documented.
+
+Yes, it is documented in "Pro Git" book's chapter [[https://git-scm.com/book/en/v2/Git-Internals-Git-Objects][10.2 Git Objects]]
+under headline "Object Storage" at the end: 
+"... there is a header stored with every object you commit to your Git object database."
+"... Git first constructs a header which starts by identifying the type of object ... 
+To that first part of the header, Git adds a space followed by the size in bytes of the content, 
+and adding a final null byte".
