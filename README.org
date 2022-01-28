@@ -31,8 +31,20 @@ part of which is providing a Python kernel for Jupyter."
   for [[https://jupyter.org/][Project Jupyter]] offering all the familiar building blocks 
   of the classic Jupyter Notebook in a flexible and powerful user interface. 
   JupyterLab will eventually replace the classic Jupyter Notebook.
+- [[https://mybinder.readthedocs.io/en/latest/][Binder]] is the notbook execution environment,
+  which not only supports executing Jupyter Notebooks powered by it's core kernels 
+  for programming languages such as Ju(Julia)-pyt(Python)-er(R) but also for R(ust :).
+  See binder's documentation headline [[https://mybinder.readthedocs.io/en/latest/howto/languages.html?highlight=multi#using-multiple-languages-at-once][Using multiple languages at once]].
+  - Python :: your environment will have Python (and specified dependencies) installed 
+    when you use one of the following configuration files:
+    - =requirements.txt=; utilized by ~pip~
+    - =environment.yml=; utilized by ~conda~
+  - R :: you must specify a version of R in a =runtime.txt= file. 
+  - Julia :: include a configuration file called =Project.toml=. 
 
-** [[https://pipenv.readthedocs.io/en/latest/][Pipenv]]: Python Dev Workflow for Humans
+** Install Jupyter Notebook with Pipenv
+
+[[https://pipenv.readthedocs.io/en/latest/][Pipenv]]: Python Dev Workflow for Humans
 
 Pipenv is a tool that aims to bring the best of all packaging worlds 
 (bundler, composer, npm, cargo, yarn, etc.) to the Python world. 
