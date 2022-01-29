@@ -18,6 +18,9 @@ have moved to new projects under the name [[https://jupyter.org/][Jupyter]].
 IPython itself is focused on interactive Python, 
 part of which is providing a Python kernel for Jupyter."
 
+You can get good old IPython when executing a ~jupyter console~
+instead of a ~jupyter notebook~ ;-).
+
 ** Learning about Jupyter Notebook
 - This blog entry refers to a text book:
   https://blog.jupyter.org/teaching-and-learning-with-jupyter-c1d965f7b93a
@@ -99,10 +102,209 @@ Run a Jupyter notebook and open displayed URL in browser
 As long as shell is controlled by Emacs you may open 
 the displayed URL by mark the URL and type M+x '[[help:browse-url][browse-url]]'.
 
-** Learning GIT by doing "[[https://alexwlchan.net/a-plumbers-guide-to-git/][A Plumber’s Guide to Git]]" and "man git-push"
+** Install Jupyter (Qt)Console with Pipenv
+
+Even though jupyter-console seems to be installed with jupyter,
+I could neither start ~jupyter console~ nor ~jupyter qtconsole~:
+#+BEGIN_EXAMPLE
+[tilo@holm play-jupyter]$ 
+[tilo@holm play-jupyter]$ pipenv run jupyter console
+Jupyter console 6.4.0
+
+Python 3.10.1 (main, Dec 18 2021, 23:53:45) [GCC 11.1.0]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 8.0.1 -- An enhanced Interactive Python. Type '?' for help.
+Traceback (most recent call last):
+  File "/home/tilo/.local/share/virtualenvs/play-jupyter-8vMFQbMi/bin/jupyter-console", line 8, in <module>
+    sys.exit(main())
+...
+    File "/home/tilo/.local/share/virtualenvs/play-jupyter-8vMFQbMi/lib/python3.10/site-packages/jupyter_console/ptshell.py", line 664, in mainloop
+    main_task = asyncio.wait(tasks, loop=loop, return_when=asyncio.FIRST_COMPLETED)
+TypeError: wait() got an unexpected keyword argument 'loop'
+sys:1: RuntimeWarning: coroutine 'ZMQTerminalInteractiveShell.interact' was never awaited
+[tilo@holm play-jupyter]$ 
+#+END_EXAMPLE
+
+Even not after installed ~qtconsole~:
+#+BEGIN_EXAMPLE
+  [tilo@holm play-jupyter]$ 
+  [tilo@holm play-jupyter]$ pipenv install qtconsole
+  Installing qtconsole...
+  Adding qtconsole to Pipfile's [packages]...
+  ✔ Installation Succeeded 
+  Pipfile.lock (5509dc) out of date, updating to (3b5bc9)...
+  Locking [dev-packages] dependencies...
+  Locking [packages] dependencies...
+  Building requirements...
+  Resolving dependencies...
+  ✔ Success! 
+  Updated Pipfile.lock (3b5bc9)!
+  Installing dependencies from Pipfile.lock (3b5bc9)...
+    🐍   ▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉ 0/0 — 00:00:00
+  [tilo@holm play-jupyter]$ 
+  [tilo@holm play-jupyter]$ 
+  [tilo@holm play-jupyter]$ pipenv run jupyter qtconsole
+  Traceback (most recent call last):
+    File "/home/tilo/.local/share/virtualenvs/play-jupyter-8vMFQbMi/bin/jupyter-qtconsole", line 5, in <module>
+      from qtconsole.qtconsoleapp import main
+    File "/home/tilo/.local/share/virtualenvs/play-jupyter-8vMFQbMi/lib/python3.10/site-packages/qtconsole/qtconsoleapp.py", line 61, in <module>
+      from qtpy import QtCore, QtGui, QtWidgets, QT_VERSION
+    File "/home/tilo/.local/share/virtualenvs/play-jupyter-8vMFQbMi/lib/python3.10/site-packages/qtpy/QtCore.py", line 42, in <module>
+      from PyQt5.QtCore import *
+  ModuleNotFoundError: No module named 'PyQt5'
+  [tilo@holm play-jupyter]$ 
+#+END_EXAMPLE
+
+It has been required to install ~PyQt5~ manually.
+#+BEGIN_EXAMPLE
+  pipenv install PyQt5
+#+END_EXAMPLE
+
+** Run a Jupyter QtConsole with Pipenv
+
+Run a Jupyter QtConsole opens a Qt-Terminal window with
+good old IPython :-), or may be not the same; see my by-the-way below
+on editing cells, not only when a line has a double colon.
+
+#+BEGIN_EXAMPLE
+  pipenv run jupyter qtconsole
+#+END_EXAMPLE
+
+By-The-Way: it took some hours to find the right keyboard combination
+to start editing a ~cell~ rather than a ~line~
+(similar to "magic" ~%<line>~ or ~%%<cell>~).
+I was not able to edit more then one line when the python code has no
+~:~ in a =ipython= installation of my system.
+
+Only after I installed ~jupyter qtconsole~ I found =CTRL+ENTER= to
+get start editing the next line instead of evaluate the current line.
+
+#+BEGIN_EXAMPLE
+  In [44]: cwd = !pwd          <-- TILO: Ctrl+Enter
+      ...: !ls -la $cwd        <-- TILO: Enter
+  ls: Zugriff auf '[/home/tilo/Projects/play-jupyter]' nicht möglich: Datei oder Verzeichnis nicht gefunden
+
+  In [45]: cwd?
+  Type:        SList
+  String form: ['/home/tilo/Projects/play-jupyter']
+  Length:      1
+  File:        ~/.local/share/virtualenvs/play-jupyter-8vMFQbMi/lib/python3.10/site-packages/IPython/utils/text.py
+  Docstring:  
+  List derivative with a special access attributes.
+
+  These are normal lists, but with the special attributes:
+
+  ,* .l (or .list) : value as list (the list itself).
+  ,* .n (or .nlstr): value as a string, joined on newlines.
+  ,* .s (or .spstr): value as a string, joined on spaces.
+  ,* .p (or .paths): list of path objects (requires path.py package)
+
+  Any values which require transformations are computed only once and
+  cached.
+
+  In [46]: cwd = !pwd
+      ...: !ls -la $cwd.spstr
+  insgesamt 240
+  drwxr-xr-x  4 tilo tilo  4096 29. Jan 16:41  .
+  drwxr-xr-x 12 tilo tilo  4096 14. Jan 17:02  ..
+  drwxr-xr-x  8 tilo tilo  4096 29. Jan 16:38  .git
+  -rw-r--r--  1 tilo tilo  1223 12. Dez 2020   .gitignore
+  drwxr-xr-x  2 tilo tilo  4096  4. Jan 2021   .ipynb_checkpoints
+  -rw-r--r--  1 tilo tilo 96119 23. Jan 20:52  julia_notes.ipynb
+  -rw-r--r--  1 tilo tilo   211 29. Jan 16:15  Pipfile
+  -rw-r--r--  1 tilo tilo 49702 29. Jan 16:15  Pipfile.lock
+  -rw-r--r--  1 tilo tilo  4995 23. Jan 20:17  python3_notes.ipynb
+  -rw-r--r--  1 tilo tilo  8109 29. Jan 07:50  python_tricks.ipynb
+  -rw-r--r--  1 tilo tilo 20372 29. Jan 16:41 '#README.org#'
+  lrwxrwxrwx  1 tilo tilo    25 29. Jan 16:40  .#README.org -> tilo@holm.4452:1643453754
+  -rw-r--r--  1 tilo tilo 20323 29. Jan 16:38  README.org
+  -rw-r--r--  1 tilo tilo   489 12. Dez 2020   requirements.txt
+  -rw-r--r--  1 tilo tilo  2187  4. Jan 2021   rust_notes.ipynb
+  -rw-r--r--  1 tilo tilo    27 12. Dez 2020   textfile.txt
+
+#+END_EXAMPLE
+
+Interesting to learn more on that IPython type ~SList~.
+First is says it is like a normal list but I cannot deference it's item.
+
+#+BEGIN_EXAMPLE
+  In [58]: cwd = !pwd
+      ...: !ls -la $cwd[0]
+  ls: Zugriff auf '[/home/tilo/Projects/play-jupyter][0]' nicht möglich: Datei oder Verzeichnis nicht gefunden
+
+#+END_EXAMPLE
+
+The [[https://ipython.readthedocs.io/en/stable/interactive/reference.html#system-shell-access][IPython reference]] helps in chapter "Interactive use" when it talks
+about "System shell access". 
+
+-----
+
+IPython also allows you to expand the value of python variables when
+making system calls.
+
+Wrap variables or expressions in ~{~braces~}~:
+#+BEGIN_EXAMPLE
+  In [60]: pyvar = 'Hello Jupyter'
+      ...: !echo "A python variable: {pyvar}"
+  A python variable: Hello Jupyter
+
+  In [61]: import math
+      ...: x = 8
+      ...: !echo {math.factorial(x)}
+  40320
+
+#+END_EXAMPlE
+
+For simple cases, you can alternatively prepend ~$~ to a variable name:
+
+#+BEGIN_EXAMPLE
+  In [64]: import sys
+      ...: !echo $sys.argv
+  [/home/tilo/.local/share/virtualenvs/play-jupyter-8vMFQbMi/lib/python3.10/site-packages/ipykernel_launcher.py, -f, /home/tilo/.local/share/jupyter/runtime/kernel-6328.json]
+
+  In [65]: !echo "A system variable: $$HOME" # Use $$ for literal $
+  A system variable: /home/tilo
+
+#+END_EXAMPlE
+
+-----
+
+OK, got it. Here were with my own example:
+#+BEGIN_EXAMPLE
+  In [56]: dir_list = ["..","."]
+      ...: !ls -l {dir_list[1]}
+  insgesamt 204
+  -rw-r--r-- 1 tilo tilo 96119 23. Jan 20:52 julia_notes.ipynb
+  -rw-r--r-- 1 tilo tilo   211 29. Jan 16:15 Pipfile
+  -rw-r--r-- 1 tilo tilo 49702 29. Jan 16:15 Pipfile.lock
+  -rw-r--r-- 1 tilo tilo  4995 23. Jan 20:17 python3_notes.ipynb
+  -rw-r--r-- 1 tilo tilo  8109 29. Jan 07:50 python_tricks.ipynb
+  -rw-r--r-- 1 tilo tilo 22539 29. Jan 17:04 README.org
+  -rw-r--r-- 1 tilo tilo   489 12. Dez 2020  requirements.txt
+  -rw-r--r-- 1 tilo tilo  2187  4. Jan 2021  rust_notes.ipynb
+  -rw-r--r-- 1 tilo tilo    27 12. Dez 2020  textfile.txt
+
+#+END_EXAMPLE
+
+** Jupyter and Emacs Org Mode
+
+There are two emacs packages worth visiting:
+- EIN :: "The Emacs IPython Notebook (EIN) package provides a Jupyter
+  Notebook client and integrated REPL (like SLIME) in Emacs."
+  Documentation: http://millejoh.github.io/emacs-ipython-notebook/
+- emacs-jupyter :: "Provides REPL and ~org-mode~ source block
+  frontends to Jupyter kernels."
+
+** Off-topic: Learning GIT by doing "[[https://alexwlchan.net/a-plumbers-guide-to-git/][A Plumber’s Guide to Git]]" and "man git-push"
+
+Note: this would be better belong to repository =play-git=,
+but I wasn't not able to reproduce the same situation having two
+different root-commits create by ~GitHub~ remotely, and locally by ~git
+init~. And but the example hashes of ~commit~ and ~tree~ objects
+belong to this repo.
 
 I initialized the local git repository and did 2 commits
-and created a repository on Adtran's github and did 1 commit.
+?and created a repository on Adtran's github and did 1 commit.
 After I tried to synchronize my local with remote repository 
 I ended up in an fatal error:
 
@@ -199,7 +401,7 @@ being ~6a0fc90~ as well as ~ec32c54~:
       #+END_EXAMPLE
 
 The issue is explained in "NOTE ABOUT FAST-FORWARDS" 
-in manual page of [[man:git-push][git-push]].
+in manual page of [[https://manpages.debian.org/bullseye/git-man/git-push.1.en.html][git-push]].
 
 #+BEGIN_EXAMPLE
   In contrast, a non-fast-forward update will lose history. For example, suppose you and somebody else
@@ -327,7 +529,7 @@ I changed the file I writing in ... let's stash it away and do the rebase.
 
 OK, we are back on track :-).
 
-** Post Scriptum for Learning GIT by doing "[[https://alexwlchan.net/a-plumbers-guide-to-git/][A Plumber’s Guide to Git]]" 
+*** Post Scriptum for Learning GIT by doing "[[https://alexwlchan.net/a-plumbers-guide-to-git/][A Plumber’s Guide to Git]]" 
 
 The plumber's guide did not explain why I get different hash values 
 when ~git~ creates SHA1 value and when ~sha1sum~ creates SHA1.
@@ -372,3 +574,4 @@ under headline "Object Storage" at the end:
 "... Git first constructs a header which starts by identifying the type of object ... 
 To that first part of the header, Git adds a space followed by the size in bytes of the content, 
 and adding a final null byte".
+
