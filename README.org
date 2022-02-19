@@ -295,6 +295,20 @@ There are two emacs packages worth visiting:
 - emacs-jupyter :: "Provides REPL and ~org-mode~ source block
   frontends to Jupyter kernels."
 
+** Off-topic: Install Docker on Manjaro, required by jupyter-repo2docker
+
+It hasn't been sufficient to ~pamac install docker~.
+Package ~docker~ together with dependencies like ~containerd~ had been installed
+but ~docker.service~ did neither run nor had been started during start-up.
+[[LinuxConfig.org][https://linuxconfig.org/manjaro-linux-docker-installation]] 
+had an answer for me:
+- with a ~sudoer~ account execute following commands:
+  - =sudo systemctl start docker.service=
+  - =sudo systemctl enable docker.service=
+- and with a ~sudoer~ account make users planned to execute ~docker~
+  a member of group ~docker~: =sudo usermod --append --group docker tilo=,
+  and relogin.
+
 ** Off-topic: Learning GIT by doing "[[https://alexwlchan.net/a-plumbers-guide-to-git/][A Plumber’s Guide to Git]]" and "man git-push"
 
 Note: this would be better belong to repository =play-git=,

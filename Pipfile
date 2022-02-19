@@ -10,6 +10,7 @@ jupyter = "*"
 idna = "*"
 qtconsole = "*"
 pyqt5 = "*"
+jupyter-repo2docker = "*"
 
 [requires]
 python_version = "3"
