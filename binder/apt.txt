@@ -1,0 +1,5 @@
+# curl
+cargo
+cmake
+libzmq3-dev
+rust-src

@@ -295,6 +295,468 @@ There are two emacs packages worth visiting:
 - emacs-jupyter :: "Provides REPL and ~org-mode~ source block
   frontends to Jupyter kernels."
 
+** Make Play Jupyter a Binder-ready Repo with repo2docker
+
+[[https://mybinder.readthedocs.io/en/latest/config_files.html][Configuration Files]]
+
+As explained in the [[https://repo2docker.readthedocs.io/en/latest/usage.html#usage-config-file-location][repo2docker documentation]], the configuration files can be placed in:
+- A folder named ~binder/~ in the root of the repository.
+- A folder named ~.binder/~ in the root of the repository.
+- The root directory of the repository.
+
+A number of repo2docker configuration files can be combined to compose more complex setups.
+
+*** Calling repo2docker
+
+repo2docker is called with this command:
+=jupyter-repo2docker <Source-Repository> --image-name <Image-Name>=
+
+where <Source-Repository> is:
+- a URL of a Git repository (https://github.com/binder-examples/requirements),
+- a Zenodo DOI (10.5281/zenodo.1211089),
+- a SWHID (swh:1:rev:999dd06c7f679a2714dfe5199bdca09522a29649), or
+- a path to a local directory (a/local/directory)
+
+of the source repository you want to build.
+
+For example, the following command will build an image of Peter Norvig’s Pytudes repository:
+
+~jupyter-repo2docker https://github.com/norvig/pytudes~
+
+Building the image may take a few minutes.
+
+*** Sample Binder Repositories
+
+The [[https://github.com/binder-examples][binder examples]] organization on GitHub contains a list of sample
+repositories for common configurations that ~repo2docker~ can build with
+various configuration files such as Python and R installation in a
+repository.
+
+[[https://mybinder.readthedocs.io/en/latest/examples/sample_repos.html?highlight=multi-language#managing-languages][Managing languages]] is a comprehnsive overview of utilizing binder.
+
+Multi-language demo is a demo showing how you can intermingle Python, R, Rust, Fortran, Cython, C.
+
+You can try it :
+- [[https://mybinder.org/v2/gh/binder-examples/multi-language-demo/master][launch Binder]]
+- [[https://github.com/binder-examples/multi-language-demo][Github repo]]
+
+And read the accompanying [[https://blog.jupyter.org/i-python-you-r-we-julia-baf064ca1fb6][blog post]].
+
+*** Project.toml - Install a Julia environment
+
+A Project.toml (or JuliaProject.toml) file can specify both the
+version of Julia to be used and a list of Julia packages to be
+installed. If a Manifest.toml is present, it will determine the exact
+versions of the Julia packages that are installed.
+
+*** requirements.txt - Install a Python environment
+
+This specifies a list of Python packages that should be installed in
+your environment. Our requirements.txt example on GitHub shows a
+typical requirements file.
+
+*** apt.txt - Install packages with apt-get
+
+A list of Debian packages that should be installed. The base image used is usually the latest released version of Ubuntu.
+
+We use apt.txt, for example, to install LaTeX in our example apt.txt for LaTeX.
+
+*** postBuild - Run code after installing the environment
+
+A script that can contain arbitrary commands to be run after the whole repository has been built. If you want this to be a shell script, make sure the first line is #!/bin/bash.
+
+Note that by default the build will not be stopped if an error occurs inside a shell script. You should include set -e or the equivalent at the start of the script to avoid errors being silently ignored.
+
+An example use-case of postBuild file is JupyterLab’s demo on mybinder.org. It uses a postBuild file in a folder called binder to prepare their demo for binder.
+
+*** Install Jupyter Kernel for Rust
+
+Build issue for ~evcxr_jupyter~
+
+#+BEGIN_EXAMPLE
+    -- Build files have been written to: /tmp/cargo-installsPwqWa/release/build/zmq-sys-ea70069611a043cc/out/build
+    running: "cmake" "--build" "." "--target" "install" "--config" "Release" "--parallel" "8"
+
+    --- stderr
+    CMake Warning:
+      Manually-specified variables were not used by the project:
+
+        CMAKE_ASM_COMPILER
+        CMAKE_ASM_FLAGS
+
+
+    Unknown argument --parallel
+    Unknown argument 8
+    Usage: cmake --build <dir> [options] [-- [native-options]]
+    Options:
+      <dir>          = Project binary directory to be built.
+      --target <tgt> = Build <tgt> instead of default targets.
+                       May only be specified once.
+      --config <cfg> = For multi-configuration tools, choose <cfg>.
+      --clean-first  = Build target 'clean' first, then build.
+                       (To clean only, use --target 'clean'.)
+      --use-stderr   = Ignored.  Behavior is default in CMake >= 3.0.
+      --             = Pass remaining options to the native tool.
+    thread 'main' panicked at '
+    command did not execute successfully, got: exit status: 1
+
+    build script failed, must exit now', /home/tilo/.cargo/registry/src/github.com-1ecc6299db9ec823/cmake-0.1.48/src/lib.rs:975:5
+#+END_EXAMPLE
+
+Turned out to be an incompatible ~cmake~ version.
+
+On my host runs:
+#+BEGIN_EXAMPLE
+[tilo@holm play-jupyter]$ cmake --version
+cmake version 3.22.2
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+#+END_EXAMPLE
+
+On repo2docker's docker container with ~LABEL
+repo2docker.version="2021.08.0"~ runs:
+#+BEGIN_EXAMPLE
+tilo@32644f4fde36:~$ cmake --version
+cmake version 3.10.2
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+#+END_EXAMPLE
+
+Which shows the same error:
+#+BEGIN_EXAMPLE
+tilo@32644f4fde36:~$ cmake --build . --target install --config Release --parallel 8
+Unknown argument --parallel
+Unknown argument 8
+Usage: cmake --build <dir> [options] [-- [native-options]]
+Options:
+  <dir>          = Project binary directory to be built.
+  --target <tgt> = Build <tgt> instead of default targets.
+                   May only be specified once.
+  --config <cfg> = For multi-configuration tools, choose <cfg>.
+  --clean-first  = Build target 'clean' first, then build.
+                   (To clean only, use --target 'clean'.)
+  --use-stderr   = Ignored.  Behavior is default in CMake >= 3.0.
+  --             = Pass remaining options to the native tool.
+#+END_EXAMPLE
+
+Let's see if EValuation-ConteXt-for-Rust can help us:
+https://github.com/google/evcxr/tree/main/binder.
+I see 3 differences:
+1. postBuild ~cargo install evcxr_jupyter --no-default-features~;
+   Great I've got a step forward, flag ~--no-default-features~
+   prevented us from running into the ~cmake~ issue.
+   Next error brings us to next difference:
+   #+BEGIN_EXAMPLE
+      --- stderr
+      thread 'main' panicked at 'Unable to locate libzmq:
+      `"pkg-config" "--libs" "--cflags" "libzmq" "libzmq >= 4.1"` did not exit successfully: exit status: 1
+      error: could not find system library 'libzmq' required by the 'zmq-sys' crate
+
+      --- stderr
+      Package libzmq was not found in the pkg-config search path.
+      Perhaps you should add the directory containing `libzmq.pc'
+      to the PKG_CONFIG_PATH environment variable
+      No package 'libzmq' found
+      Package libzmq was not found in the pkg-config search path.
+      Perhaps you should add the directory containing `libzmq.pc'
+      to the PKG_CONFIG_PATH environment variable
+      No package 'libzmq' found
+      ', /home/tilo/.cargo/registry/src/github.com-1ecc6299db9ec823/zmq-sys-0.11.0/build/pkg_config.rs:26:17
+   #+END_EXAMPLE
+2. apt package ~libzmq3-dev~;
+   Great the jupyter-notebook is running and has ~evcxr_jupyter~.
+   But there is no jupyter-kernel for rust but for ~Julia 1.7.2~ and
+   for ~Python 3~. Rust-kernel needs to be installed as next difference:
+3. postBuild ~evcxr_jupyter --install~;
+   Expected error:
+   #+BEGIN_EXAMPLE
+     ...
+        Compiling evcxr v0.12.0
+        Compiling evcxr_jupyter v0.12.0
+         Finished release [optimized] target(s) in 5m 30s
+       Installing /home/tilo/.cargo/bin/evcxr_jupyter
+        Installed package `evcxr_jupyter v0.12.0` (executable `evcxr_jupyter`)
+     warning: be sure to add `/home/tilo/.cargo/bin` to your PATH to be able to run the installed binaries
+     + evcxr_jupyter --install
+     ./binder/postBuild: line 14: evcxr_jupyter: command not found
+   #+END_EXAMPLE
+   - Cargo's default directory [[https://doc.rust-lang.org/cargo/commands/cargo-install.html][to install packages]] into is not part of
+     ~repo2docker~'s evironment variable ~PATH~.
+     Let's look again into ~repo2docker~'s documentation:
+   - [[https://repo2docker.readthedocs.io/en/2021.03.0/faq.html?highlight=path#can-i-add-executable-files-to-the-user-s-path][Can I add executable files to the user’s PATH?]]
+     Yes! With a postBuild - Run code after installing the environment
+     file, you can place any files that should be called from the
+     command line in the folder =~/.local/=. This folder will be available
+     in a user’s PATH, and can be run from the command line (or as a
+     subsequent build step.)
+   - postBuild ~cargo install --root $HOME/.local/~;
+     An alternate solution should be to call
+     ~$HOME/.cargo/bin/evcxr_jupyter --install~. 
+     Great ~evcxr_jupyter~ has installed itself. But there is still no
+     rust-kernel!? 
+     #+BEGIN_EXAMPLE
+       ...
+          Compiling evcxr v0.12.0
+          Compiling evcxr_jupyter v0.12.0
+           Finished release [optimized] target(s) in 5m 17s
+         Installing /home/tilo/.local/bin/evcxr_jupyter
+          Installed package `evcxr_jupyter v0.12.0` (executable `evcxr_jupyter`)
+       + evcxr_jupyter --install
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/kernel.json
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/logo-32x32.png
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/logo-64x64.png
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/logo-LICENSE.md
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/kernel.js
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/lint.js
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/lint.css
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/lint-LICENSE
+       Writing /home/tilo/.local/share/jupyter/kernels/rust/version.txt
+       Installation complete
+       ...
+     #+END_EXAMPLE
+   - ~repo2docker~ installs jupyter-kernels in its environment
+     variable:
+     #+BEGIN_EXAMPLE
+       tilo@fb6100782769:~$ env | sort
+       APP_BASE=/srv
+       CONDA_DEFAULT_ENV=/srv/conda/envs/notebook
+       CONDA_DIR=/srv/conda
+       DEBIAN_FRONTEND=noninteractive
+       HOME=/home/tilo
+       HOSTNAME=fb6100782769
+       JULIA_DEPOT_PATH=/srv/julia/pkg
+       JULIA_PATH=/srv/julia
+       JULIA_PROJECT=/home/tilo
+       JULIA_VERSION=1.7.2
+       JUPYTER_DATA_DIR=/srv/conda/envs/notebook/share/jupyter
+       JUPYTER=/srv/conda/envs/notebook/bin/jupyter
+       KERNEL_PYTHON_PREFIX=/srv/conda/envs/notebook
+       LANG=en_US.UTF-8
+       LANGUAGE=en_US.UTF-8
+       LC_ALL=en_US.UTF-8
+       ...
+       NB_ENVIRONMENT_FILE=/tmp/env/environment.lock
+       NB_PYTHON_PREFIX=/srv/conda/envs/notebook
+       NPM_CONFIG_GLOBALCONFIG=/srv/npm/npmrc
+       NPM_DIR=/srv/npm
+       PATH=/home/tilo/.local/bin:/home/tilo/.local/bin:/srv/conda/envs/notebook/bin:/srv/conda/bin:/srv/npm/bin:/srv/julia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+       PWD=/home/tilo
+       PYTHONUNBUFFERED=1
+       REPO_DIR=/home/tilo
+       SHELL=/bin/bash
+       SHLVL=1
+       TERM=xterm
+       USER=tilo
+       _=/usr/bin/env
+     #+END_EXAMPLE
+   - Let's try to set ~repo2docker~'s environment variable:
+     #+BEGIN_EXAMPLE
+       pipenv run jupyter-repo2docker --debug --env 'JUPYTER_DATA_DIR=$HOME/.local/' --env 'CARGO_INSTALL_ROOT=$HOME/.local/' .
+     #+END_EXAMPLE
+     No, ~JUPYTER_DATA_DIR~ isn't overwritten.
+     See also [[https://docs.jupyter.org/en/latest/use/jupyter-directories.html][documentation of jupyter directories]]. 
+     Furthermore it looks as if both environment variables are not
+     available during build.
+   - Let's try to set environment variable ~JUPYTER_PATH~ which is
+     read by ~evcxr_jupyter~: https://github.com/google/evcxr/blob/5fe621b4e26b849c2873d7b39604a3a822a30e5d/evcxr_jupyter/src/install.rs#L93.
+     Great, we got a rust kernel running.
+     But the kernel dies:
+     #+BEGIN_EXAMPLE
+       [I 16:00:18.528 NotebookApp] Kernel started: 3bc47c2c-4683-4f0b-bc06-6f1a79ad4378, name: rust
+       Error: Failed to find sysroot for Cargo.toml file /tmp/.tmp51kurL/Cargo.toml. Is rust-src installed?
+     #+END_EXAMPLE
+     Looks as if ~rust-src~ isn't installed, it is maybe no dependency
+     of package ~cargo~: https://packages.ubuntu.com/bionic/cargo.
+     Right, we need to put it in ~apt.txt~.
+   - We are done :-)
+     
+*** repo2docker created Docker file
+
+#+BEGIN_EXAMPLE
+  [tilo@holm play-jupyter]$ pipenv run jupyter-repo2docker --no-build --debug .
+  [Repo2Docker] Looking for repo2docker_config in /home/tilo/Projects/play-jupyter
+  Picked Local content provider.
+  Using local repo ..
+
+  FROM buildpack-deps:bionic
+
+  # Avoid prompts from apt
+  ENV DEBIAN_FRONTEND=noninteractive
+
+  # Set up locales properly
+  RUN apt-get -qq update && \
+      apt-get -qq install --yes --no-install-recommends locales > /dev/null && \
+      apt-get -qq purge && \
+      apt-get -qq clean && \
+      rm -rf /var/lib/apt/lists/*
+
+  RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+      locale-gen
+
+  ENV LC_ALL en_US.UTF-8
+  ENV LANG en_US.UTF-8
+  ENV LANGUAGE en_US.UTF-8
+
+  # Use bash as default shell, rather than sh
+  ENV SHELL /bin/bash
+
+  # Set up user
+  ARG NB_USER
+  ARG NB_UID
+  ENV USER ${NB_USER}
+  ENV HOME /home/${NB_USER}
+
+  RUN groupadd \
+          --gid ${NB_UID} \
+          ${NB_USER} && \
+      useradd \
+          --comment "Default user" \
+          --create-home \
+          --gid ${NB_UID} \
+          --no-log-init \
+          --shell /bin/bash \
+          --uid ${NB_UID} \
+          ${NB_USER}
+
+  RUN wget --quiet -O - https://deb.nodesource.com/gpgkey/nodesource.gpg.key |  apt-key add - && \
+      DISTRO="bionic" && \
+      echo "deb https://deb.nodesource.com/node_14.x $DISTRO main" >> /etc/apt/sources.list.d/nodesource.list && \
+      echo "deb-src https://deb.nodesource.com/node_14.x $DISTRO main" >> /etc/apt/sources.list.d/nodesource.list
+
+  # Base package installs are not super interesting to users, so hide their outputs
+  # If install fails for some reason, errors will still be printed
+  RUN apt-get -qq update && \
+      apt-get -qq install --yes --no-install-recommends \
+         less \
+         nodejs \
+         unzip \
+         > /dev/null && \
+      apt-get -qq purge && \
+      apt-get -qq clean && \
+      rm -rf /var/lib/apt/lists/*
+
+  EXPOSE 8888
+
+  # Environment variables required for build
+  ENV APP_BASE /srv
+  ENV NPM_DIR ${APP_BASE}/npm
+  ENV NPM_CONFIG_GLOBALCONFIG ${NPM_DIR}/npmrc
+  ENV CONDA_DIR ${APP_BASE}/conda
+  ENV NB_PYTHON_PREFIX ${CONDA_DIR}/envs/notebook
+  ENV NB_ENVIRONMENT_FILE /tmp/env/environment.lock
+  ENV KERNEL_PYTHON_PREFIX ${NB_PYTHON_PREFIX}
+  ENV JULIA_PATH ${APP_BASE}/julia
+  ENV JULIA_DEPOT_PATH ${JULIA_PATH}/pkg
+  ENV JULIA_VERSION 1.7.2
+  ENV JUPYTER ${NB_PYTHON_PREFIX}/bin/jupyter
+  ENV JUPYTER_DATA_DIR ${NB_PYTHON_PREFIX}/share/jupyter
+  # Special case PATH
+  ENV PATH ${NB_PYTHON_PREFIX}/bin:${CONDA_DIR}/bin:${NPM_DIR}/bin:${JULIA_PATH}/bin:${PATH}
+  # If scripts required during build are present, copy them
+
+  COPY --chown=1000:1000 build_script_files/-2fhome-2ftilo-2f-2elocal-2fshare-2fvirtualenvs-2fplay-2djupyter-2d8vmfqbmi-2flib-2fpython3-2e10-2fsite-2dpackages-2frepo2docker-2fbuildpacks-2fconda-2factivate-2dconda-2esh-e590a4 /etc/profile.d/activate-conda.sh
+
+  COPY --chown=1000:1000 build_script_files/-2fhome-2ftilo-2f-2elocal-2fshare-2fvirtualenvs-2fplay-2djupyter-2d8vmfqbmi-2flib-2fpython3-2e10-2fsite-2dpackages-2frepo2docker-2fbuildpacks-2fconda-2fenvironment-2epy-2d3-2e7-2elock-15abfc /tmp/env/environment.lock
+
+  COPY --chown=1000:1000 build_script_files/-2fhome-2ftilo-2f-2elocal-2fshare-2fvirtualenvs-2fplay-2djupyter-2d8vmfqbmi-2flib-2fpython3-2e10-2fsite-2dpackages-2frepo2docker-2fbuildpacks-2fconda-2finstall-2dminiforge-2ebash-9b2e93 /tmp/install-miniforge.bash
+  RUN mkdir -p ${NPM_DIR} && \
+  chown -R ${NB_USER}:${NB_USER} ${NPM_DIR}
+
+  USER ${NB_USER}
+  RUN npm config --global set prefix ${NPM_DIR}
+
+  USER root
+  RUN TIMEFORMAT='time: %3R' \
+  bash -c 'time /tmp/install-miniforge.bash' && \
+  rm -rf /tmp/install-miniforge.bash /tmp/env
+
+  RUN mkdir -p ${JULIA_PATH} && \
+  curl -sSL "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar -xz -C ${JULIA_PATH} --strip-components 1
+
+  RUN mkdir -p ${JULIA_DEPOT_PATH} && \
+  chown ${NB_USER}:${NB_USER} ${JULIA_DEPOT_PATH}
+
+
+
+  # Allow target path repo is cloned to be configurable
+  ARG REPO_DIR=${HOME}
+  ENV REPO_DIR ${REPO_DIR}
+  WORKDIR ${REPO_DIR}
+  RUN chown ${NB_USER}:${NB_USER} ${REPO_DIR}
+
+  # We want to allow two things:
+  #   1. If there's a .local/bin directory in the repo, things there
+  #      should automatically be in path
+  #   2. postBuild and users should be able to install things into ~/.local/bin
+  #      and have them be automatically in path
+  #
+  # The XDG standard suggests ~/.local/bin as the path for local user-specific
+  # installs. See https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+  ENV PATH ${HOME}/.local/bin:${REPO_DIR}/.local/bin:${PATH}
+
+  # The rest of the environment
+  ENV CONDA_DEFAULT_ENV ${KERNEL_PYTHON_PREFIX}
+  ENV JULIA_PROJECT ${REPO_DIR}
+  # Run pre-assemble scripts! These are instructions that depend on the content
+  # of the repository but don't access any files in the repository. By executing
+  # them before copying the repository itself we can cache these steps. For
+  # example installing APT packages.
+  # If scripts required during build are present, copy them
+
+  COPY --chown=1000:1000 src/binder/requirements.txt ${REPO_DIR}/binder/requirements.txt
+  RUN apt-get -qq update && \
+  apt-get install --yes --no-install-recommends cargo cmake libzmq3-dev rust-src && \
+  apt-get -qq purge && \
+  apt-get -qq clean && \
+  rm -rf /var/lib/apt/lists/*
+
+  USER ${NB_USER}
+  RUN ${KERNEL_PYTHON_PREFIX}/bin/pip install --no-cache-dir -r "binder/requirements.txt"
+
+
+  # Copy stuff.
+  COPY --chown=1000:1000 src/ ${REPO_DIR}
+
+  # Run assemble scripts! These will actually turn the specification
+  # in the repository into an image.
+  USER ${NB_USER}
+  RUN JULIA_PROJECT="" julia -e "using Pkg; Pkg.add(\"IJulia\"); using IJulia; installkernel(\"Julia\", \"--project=${REPO_DIR}\");" && \
+  julia --project=${REPO_DIR} -e 'using Pkg; Pkg.instantiate(); Pkg.resolve(); pkg"precompile"'
+
+
+
+  # Container image Labels!
+  # Put these at the end, since we don't want to rebuild everything
+  # when these change! Did I mention I hate Dockerfile cache semantics?
+
+  LABEL repo2docker.ref="None"
+  LABEL repo2docker.repo="local"
+  LABEL repo2docker.version="2021.08.0"
+
+  # We always want containers to run as non-root
+  USER ${NB_USER}
+
+  # Make sure that postBuild scripts are marked executable before executing them
+  RUN chmod +x binder/postBuild
+  RUN ./binder/postBuild
+
+  # Add start script
+  # Add entrypoint
+  ENV PYTHONUNBUFFERED=1
+  COPY /python3-login /usr/local/bin/python3-login
+  COPY /repo2docker-entrypoint /usr/local/bin/repo2docker-entrypoint
+  ENTRYPOINT ["/usr/local/bin/repo2docker-entrypoint"]
+
+  # Specify the default command to run
+  CMD ["jupyter", "notebook", "--ip", "0.0.0.0"]
+
+#+END_EXAMPLE
+
+*** Run on Binder
+
+    [[https://mybinder.org/v2/gh/tilofix/play-jupyter/master][Klick to execute Jupyter-Notebook on myBinder]]
+    [[http://mybinder.org/badge.svg]]
+
 ** Off-topic: Install Docker on Manjaro, required by jupyter-repo2docker
 
 It hasn't been sufficient to ~pamac install docker~.
@@ -588,4 +1050,5 @@ under headline "Object Storage" at the end:
 "... Git first constructs a header which starts by identifying the type of object ... 
 To that first part of the header, Git adds a space followed by the size in bytes of the content, 
 and adding a final null byte".
+
 

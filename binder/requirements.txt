@@ -1,5 +1,5 @@
-# The origianl requirements.txt is replaced by pipenv 
-# pipenv describes the runtime for my jupyter runtime.
+# The original requirements.txt is replaced by pipenv 
+# pipenv describes the runtime for my local jupyter installation.
 # 
 # This requirements.txt is to be parsed by binder's repo2docker tool.
 # It is to contain all python dependencies for jupyter's IPython-kernel.

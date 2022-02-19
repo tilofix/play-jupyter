@@ -1,0 +1,16 @@
+#!/bin/bash
+# script is executed by repo2docker after the whole repository has been built.
+# following has been included to make the script stop after an error occured.
+set -ex
+
+# Install rust
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# source $HOME/.cargo/env
+#
+# Actually cargo with rust is installed through binder's configuration file 'apt.txt'
+export CARGO_INSTALL_ROOT="$HOME/.local/"
+echo "Cargo installs in root: $CARGO_INSTALL_ROOT"
+cargo install evcxr_jupyter --version "0.12.0" --no-default-features
+export JUPYTER_PATH=$JUPYTER_DATA_DIR
+echo "Jupyter kernels install in data dir: $JUPYTER_PATH"
+evcxr_jupyter --install
