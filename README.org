@@ -752,10 +752,10 @@ I see 3 differences:
 
 #+END_EXAMPLE
 
-*** Run on Binder
+*** Run on MyBinder
 
-    [[https://mybinder.org/v2/gh/tilofix/play-jupyter/master][Klick to execute Jupyter-Notebook on myBinder]]
     [[http://mybinder.org/badge.svg]]
+    [[https://mybinder.org/v2/gh/tilofix/play-jupyter/master][Klick to execute Jupyter-Notebook on myBinder]]
 
 ** Off-topic: Install Docker on Manjaro, required by jupyter-repo2docker
 
