@@ -309,7 +309,7 @@ A number of repo2docker configuration files can be combined to compose more comp
 *** Calling repo2docker
 
 repo2docker is called with this command:
-=jupyter-repo2docker <Source-Repository> --image-name <Image-Name>=
+=jupyter-repo2docker <Source-Repository>=
 
 where <Source-Repository> is:
 - a URL of a Git repository (https://github.com/binder-examples/requirements),
