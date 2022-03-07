@@ -22,6 +22,7 @@ You can get good old IPython when executing a ~jupyter console~
 instead of a ~jupyter notebook~ ;-).
 
 ** Learning about Jupyter Notebook
+- [[https://jupyter-notebook.readthedocs.io/en/stable/index.html][The Jupyter Notebook]]
 - This blog entry refers to a text book:
   https://blog.jupyter.org/teaching-and-learning-with-jupyter-c1d965f7b93a
 - A text book: 
