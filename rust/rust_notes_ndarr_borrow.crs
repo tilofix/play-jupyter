@@ -1,0 +1,37 @@
+#!/usr/bin/env run-cargo-script
+//! :dep ndarray = {version = "0.13.1"}
+//!
+//! ```cargo
+//! [dependencies]
+//! ndarray = "0.13.1"
+//! ```
+
+extern crate ndarray;
+fn main() {
+
+// 2 submatrices of 2 rows with 3 elements per row, means a shape of `[2, 2, 3]`.
+
+let a_3d : ndarray::Array::<i32,ndarray::Ix3> = 
+    ndarray::arr3(&[[[ 1,  2,  3],     // -- 2 rows  \_
+                     [ 4,  5,  6]],    // --         /
+                    [[ 7,  8,  9],     //            \_ 2 submatrices
+                     [10, 11, 12]]]);  //            /
+//  3 columns ..../.../.../
+assert_eq!(&a_3d.shape(), &[2, 2, 3]);
+
+/* 
+Let’s create a slice with
+- Both of the submatrices of the greatest dimension: `..`
+- Only the first row in each submatrix: `0..1`
+- Every element in each row: `..`
+ */
+
+let b_arr : ndarray::ArrayView3<i32> = 
+    a_3d.slice(ndarray::s![.., 0..1, ..]);
+let c_arr : ndarray::Array3<i32> = 
+    ndarray::arr3(&[[[ 1,  2,  3]],
+                    [[ 7,  8,  9]]]);
+assert_eq!(&b_arr, &c_arr);
+println!("{:?}", b_arr.shape());
+
+}
