@@ -1,0 +1,74 @@
+#!/usr/bin/env run-cargo-script
+// -*- mode: rust -*-
+//! Rust script to understand evcxr-error message
+//! when evcxr-cell has been successfully executed once.
+/*!
+    fn csqrtf(z: Complex) -> Complex;
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `csqrtf` redefined here
+the name `csqrtf` is defined multiple times
+
+    fn ccosf(z: Complex) -> Complex;
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `ccosf` redefined here
+the name `ccosf` is defined multiple times
+*/
+
+// this extern block links to the libm library
+#[link(name = "m")]
+extern {
+    // this is a foreign function
+    // that computes the square root of a single precision complex number
+    fn csqrtf(z: Complex) -> Complex;
+
+    fn ccosf(z: Complex) -> Complex;
+}
+
+// Since calling foreign functions is considered unsafe,
+// it's common to write safe wrappers around them.
+fn cos(z: Complex) -> Complex {
+    unsafe { ccosf(z) }
+}
+
+// Minimal implementation of single precision complex numbers
+#[repr(C)]
+#[derive(Clone, Copy)]
+struct Complex {
+    re: f32,
+    im: f32,
+}
+
+impl std::fmt::Debug for Complex {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if self.im < 0. {
+            write!(f, "{}-{}i", self.re, -self.im)
+        } else {
+            write!(f, "{}+{}i", self.re, self.im)
+        }
+    }
+}
+
+fn main () {
+    // z = -1 + 0i
+    let z = Complex { re: -1., im: 0. };
+
+    // calling a foreign function is an unsafe operation
+    let z_sqrt = unsafe { csqrtf(z) };
+
+    println!("the square root of {:?} is {:?}", z, z_sqrt);
+
+    // calling safe API wrapped around unsafe operation
+    println!("cos({:?}) = {:?}", z, cos(z));
+}
+
+/*
+   As in evcxr when the code executes the first time
+   after the jupyter-kernel has been restarted
+   the code executes here too:
+
+   [tilo@holm rust]$ 
+   [tilo@holm rust]$ chmod u+x rust_ffi_libm.crs 
+   [tilo@holm rust]$ 
+   [tilo@holm rust]$ ./rust_ffi_libm.crs 
+   the square root of -1+0i is 0+1i
+   cos(-1+0i) = 0.5403023+0i
+   [tilo@holm rust]$ 
+*/
