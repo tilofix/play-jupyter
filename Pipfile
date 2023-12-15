@@ -13,6 +13,7 @@ pyqt5 = "*"
 jupyter-repo2docker = "*"
 openmodelica-kernel = {git = "https://github.com/OpenModelica/jupyter-openmodelica.git"}
 jupyterlab = "*"
+ipython = "*"
 
 [requires]
-python_version = "3"
+python_version = "3.11"
